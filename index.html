@@ -1,1 +1,1566 @@
 
+<!DOCTYPE html>
+
+
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<title>ActiveStrongHealthy — Gym Tracker 2026</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+
+:root {
+
+  --bg: #f5f4f0; --surface: #fff; --border: #e2e0da;
+
+  --text: #1a1917; --muted: #8a8780; --accent: #2d5a3d;
+
+  --accent-light: #e8f0eb; --red: #c0392b; --amber: #d68910;
+
+  --green: #2d5a3d; --purple: #7b5ea7; --blue: #2471a3;
+
+  --mono: 'DM Mono', monospace; --sans: 'DM Sans', sans-serif;
+
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+
+
+header {
+
+background: var(–text); color: #fff; padding: 16px 20px;
+
+position: sticky; top: 0; z-index: 100;
+
+display: flex; align-items: center; justify-content: space-between;
+
+}
+
+header h1 { font-family: var(–mono); font-size: 14px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+
+header span { font-family: var(–mono); font-size: 12px; color: #888; }
+
+
+
+.tabs {
+
+display: flex; background: var(–surface);
+
+border-bottom: 1px solid var(–border);
+
+position: sticky; top: 53px; z-index: 99;
+
+overflow-x: auto; scrollbar-width: none;
+
+}
+
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+
+flex-shrink: 0; padding: 13px 10px; text-align: center;
+
+font-size: 11px; font-weight: 600; color: var(–muted);
+
+cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+
+letter-spacing: 0.03em;
+
+}
+
+.tab.active { color: var(–accent); border-bottom-color: var(–accent); }
+
+
+
+.view { display: none; padding: 18px 16px 100px; }
+
+.view.active { display: block; }
+
+
+
+.selector-row { display: grid; gap: 8px; margin-bottom: 14px; }
+
+.selector-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+
+
+.sel-group label {
+
+display: block; font-size: 11px; font-weight: 600; color: var(–muted);
+
+text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px;
+
+}
+
+.sel-group select {
+
+width: 100%; padding: 10px; border: 1.5px solid var(–border); border-radius: 8px;
+
+font-family: var(–sans); font-size: 13px; font-weight: 500;
+
+background: var(–surface); color: var(–text); outline: none; appearance: none;
+
+background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘10’ height=‘6’ viewBox=‘0 0 10 6’%3E%3Cpath d=‘M1 1l4 4 4-4’ stroke=’%238a8780’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”);
+
+background-repeat: no-repeat; background-position: right 10px center;
+
+}
+
+.sel-group select:focus { border-color: var(–accent); }
+
+
+
+.week-badge {
+
+background: var(–accent-light); border: 1px solid #c8dece;
+
+border-radius: 8px; padding: 10px 14px; margin-bottom: 16px;
+
+font-size: 13px; color: var(–accent); font-family: var(–mono);
+
+font-weight: 500; text-align: center;
+
+}
+
+
+
+.cardio-card { border-radius: 12px; margin-bottom: 14px; overflow: hidden; border: 1.5px solid transparent; }
+
+.cardio-card.treadmill { background: linear-gradient(135deg, #f0f7ff, #e8f4fe); border-color: #90c4f0; }
+
+.cardio-card.rowing    { background: linear-gradient(135deg, #f0fff8, #e4fdf0); border-color: #7fd6b0; }
+
+.cardio-card.cycling   { background: linear-gradient(135deg, #fff8f0, #fff0e0); border-color: #f0b870; }
+
+.cardio-header { padding: 11px 14px; display: flex; align-items: center; gap: 10px; }
+
+.cardio-card.treadmill .cardio-header { background: #2471a3; }
+
+.cardio-card.rowing    .cardio-header { background: #1a7a52; }
+
+.cardio-card.cycling   .cardio-header { background: #c87520; }
+
+.cardio-icon { font-size: 18px; }
+
+.cardio-title { font-size: 13px; font-weight: 700; color: #fff; }
+
+.cardio-subtitle { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 1px; }
+
+.cardio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(0,0,0,0.08); }
+
+.cardio-field { background: var(–surface); padding: 10px 12px; }
+
+.cardio-field label { display: block; font-size: 10px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+
+.cardio-field input { width: 100%; border: none; outline: none; font-family: var(–mono); font-size: 15px; font-weight: 500; color: var(–text); background: transparent; }
+
+.cardio-field input::placeholder { color: #ddd; }
+
+.cardio-field .c-unit { font-size: 9px; color: var(–muted); font-family: var(–mono); margin-top: 2px; }
+
+.cardio-notes-row { padding: 10px 14px; background: var(–surface); border-top: 1px solid rgba(0,0,0,0.06); }
+
+.cardio-notes-row label { display: block; font-size: 10px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+
+.cardio-notes-row textarea { width: 100%; border: none; outline: none; font-family: var(–mono); font-size: 13px; color: var(–text); background: transparent; resize: none; min-height: 32px; }
+
+.cardio-notes-row textarea::placeholder { color: #ddd; }
+
+
+
+.exercise-card { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+
+.exercise-card-header { padding: 11px 14px; background: var(–bg); border-bottom: 1px solid var(–border); display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+
+.exercise-name-block { flex: 1; }
+
+.exercise-num { font-size: 10px; color: var(–muted); font-family: var(–mono); margin-bottom: 2px; }
+
+.exercise-name { font-size: 13px; font-weight: 700; color: var(–text); }
+
+.exercise-badges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+
+.muscle-toggle { font-size: 10px; font-weight: 600; color: var(–accent); cursor: pointer; padding: 2px 0; letter-spacing: 0.03em; }
+
+.pb-badge { font-size: 10px; font-weight: 700; color: #ff8c00; cursor: pointer; padding: 2px 6px; border-radius: 4px; border: 1px solid #ff8c00; background: #fff8f0; letter-spacing: 0.03em; user-select: none; }
+
+.pb-badge.active { background: #ff8c00; color: #fff; }
+
+.yt-btn { flex-shrink: 0; background: #ff0000; color: #fff; border: none; border-radius: 5px; font-size: 10px; font-weight: 700; padding: 5px 9px; cursor: pointer; white-space: nowrap; font-family: var(–sans); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
+
+.yt-btn:active { opacity: 0.8; }
+
+
+
+.muscle-info { display: none; padding: 10px 14px; background: #fafaf8; border-bottom: 1px solid var(–border); font-size: 11px; line-height: 1.6; }
+
+.muscle-info.open { display: block; }
+
+.muscle-row { margin-bottom: 5px; }
+
+.muscle-label { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(–muted); }
+
+.muscle-target { color: #c0392b; font-weight: 600; }
+
+.muscle-syn { color: #2d5a3d; }
+
+.muscle-stab { color: #7b5ea7; }
+
+
+
+.primary-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(–border); }
+
+.input-group { background: var(–surface); padding: 10px 14px; }
+
+.input-group label { display: block; font-size: 10px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+
+.input-group input, .input-group select, .input-group textarea { width: 100%; border: none; outline: none; font-family: var(–mono); font-size: 15px; font-weight: 500; color: var(–text); background: transparent; }
+
+.input-group input::placeholder, .input-group textarea::placeholder { color: #ddd; }
+
+.input-group textarea { resize: none; font-size: 13px; min-height: 36px; }
+
+
+
+.detail-toggle { padding: 8px 14px; background: var(–bg); border-top: 1px solid var(–border); font-size: 11px; font-weight: 600; color: var(–muted); cursor: pointer; display: flex; align-items: center; gap: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+.detail-toggle .arrow { transition: transform 0.2s; font-size: 10px; }
+
+.detail-toggle.open .arrow { transform: rotate(180deg); }
+
+.detail-inputs { display: none; }
+
+.detail-inputs.open { display: block; }
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(–border); }
+
+.detail-grid-three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(–border); }
+
+.full-width-group { background: var(–surface); padding: 10px 14px; border-top: 1px solid var(–border); }
+
+
+
+.rpe-wrap { display: flex; align-items: center; gap: 8px; }
+
+.rpe-wrap input[type=range] { flex: 1; height: 4px; accent-color: var(–accent); }
+
+.rpe-val { font-family: var(–mono); font-size: 16px; font-weight: 700; color: var(–accent); min-width: 24px; text-align: right; }
+
+
+
+.save-btn { width: 100%; padding: 15px; background: var(–accent); color: #fff; border: none; border-radius: 12px; font-family: var(–sans); font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; letter-spacing: 0.02em; transition: opacity 0.15s; }
+
+.save-btn:active { opacity: 0.8; }
+
+
+
+.sauna-card { background: linear-gradient(135deg, #fff8f0, #fff3e0); border: 1.5px solid #f0c080; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+
+.sauna-header { padding: 11px 14px; background: #ff8c00; display: flex; align-items: center; gap: 8px; }
+
+.sauna-header span { font-size: 16px; }
+
+.sauna-title { font-size: 13px; font-weight: 700; color: #fff; }
+
+.sauna-subtitle { font-size: 10px; color: rgba(255,255,255,0.8); }
+
+.sauna-body { padding: 12px 14px; }
+
+.sauna-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0e0c0; }
+
+.sauna-step:last-child { border-bottom: none; }
+
+.sauna-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ff8c00; background: #fff; cursor: pointer; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.15s; }
+
+.sauna-check.checked { background: #ff8c00; color: #fff; }
+
+.sauna-step-text { font-size: 12px; line-height: 1.5; color: var(–text); flex: 1; }
+
+.sauna-time { font-family: var(–mono); font-weight: 700; color: #ff8c00; }
+
+.sauna-warning { margin-top: 8px; padding: 8px 10px; background: #fff0f0; border: 1px solid #f0c0c0; border-radius: 6px; font-size: 11px; color: #c0392b; }
+
+
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(–text); color: #fff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 999; transition: transform 0.3s ease; white-space: nowrap; }
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+
+
+.exercise-picker label { display: block; font-size: 11px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+
+.exercise-picker select { width: 100%; padding: 12px 14px; border: 1.5px solid var(–border); border-radius: 10px; font-family: var(–sans); font-size: 14px; font-weight: 500; background: var(–surface); color: var(–text); outline: none; appearance: none; background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘10’ height=‘6’ viewBox=‘0 0 10 6’%3E%3Cpath d=‘M1 1l4 4 4-4’ stroke=’%238a8780’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”); background-repeat: no-repeat; background-position: right 14px center; margin-bottom: 16px; }
+
+.chart-card { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+
+.chart-card h3 { font-size: 11px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+
+.chart-wrap { position: relative; height: 200px; }
+
+.progress-table { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+
+.progress-table h3 { font-size: 11px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 12px 14px; border-bottom: 1px solid var(–border); background: var(–bg); }
+
+.prog-row { display: grid; grid-template-columns: 1.2fr 55px 45px 45px 40px 30px; gap: 4px; padding: 9px 14px; border-bottom: 1px solid var(–border); font-size: 12px; align-items: center; }
+
+.prog-row:last-child { border-bottom: none; }
+
+.prog-row.hdr { font-size: 9px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.05em; background: var(–bg); }
+
+.prog-label { font-family: var(–mono); font-size: 11px; color: var(–muted); }
+
+.prog-val { font-family: var(–mono); font-weight: 500; text-align: right; font-size: 12px; }
+
+.trend { text-align: center; font-size: 14px; }
+
+.trend.up { color: var(–green); }
+
+.trend.down { color: var(–red); }
+
+.trend.flat { color: var(–amber); }
+
+
+
+.body-section { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+
+.body-section-header { padding: 12px 14px; background: var(–bg); border-bottom: 1px solid var(–border); font-size: 11px; font-weight: 700; color: var(–text); text-transform: uppercase; letter-spacing: 0.06em; display: flex; justify-content: space-between; align-items: center; }
+
+.body-section-header span { color: var(–muted); font-weight: 400; font-size: 10px; text-transform: none; letter-spacing: 0; }
+
+.body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(–border); }
+
+.body-field { background: var(–surface); padding: 11px 14px; }
+
+.body-field label { display: block; font-size: 10px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+
+.body-field input { width: 100%; border: none; outline: none; font-family: var(–mono); font-size: 16px; font-weight: 500; color: var(–text); background: transparent; }
+
+.body-field input::placeholder { color: #ddd; }
+
+.body-unit { font-size: 10px; color: var(–muted); margin-top: 2px; font-family: var(–mono); }
+
+.body-date-row { padding: 12px 14px; border-bottom: 1px solid var(–border); display: flex; align-items: center; gap: 10px; }
+
+.body-date-row label { font-size: 12px; font-weight: 600; color: var(–muted); white-space: nowrap; }
+
+.body-date-row input[type=“date”] { flex: 1; padding: 8px 10px; border: 1.5px solid var(–border); border-radius: 8px; font-family: var(–sans); font-size: 13px; background: var(–surface); color: var(–text); outline: none; }
+
+.save-body-btn { width: 100%; padding: 14px; background: var(–blue); color: #fff; border: none; border-radius: 12px; font-family: var(–sans); font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; letter-spacing: 0.02em; transition: opacity 0.15s; }
+
+.save-body-btn:active { opacity: 0.8; }
+
+.body-history { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; overflow: hidden; margin-top: 16px; }
+
+.body-history-header { padding: 12px 14px; background: var(–bg); border-bottom: 1px solid var(–border); font-size: 11px; font-weight: 700; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.body-row { padding: 10px 14px; border-bottom: 1px solid var(–border); font-size: 12px; }
+
+.body-row:last-child { border-bottom: none; }
+
+.body-row-date { font-family: var(–mono); font-size: 11px; color: var(–muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+
+.body-row-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+.body-metric-pill { background: var(–bg); border-radius: 6px; padding: 5px 8px; font-size: 10px; }
+
+.body-metric-pill .bmp-label { color: var(–muted); font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.body-metric-pill .bmp-val { font-family: var(–mono); font-weight: 600; color: var(–text); font-size: 12px; }
+
+.delete-body { font-size: 11px; color: var(–red); cursor: pointer; }
+
+
+
+.session-card { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+
+.session-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(–bg); border-bottom: 1px solid var(–border); cursor: pointer; }
+
+.session-tag { display: inline-block; font-size: 10px; font-weight: 600; background: var(–accent); color: #fff; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.05em; margin-bottom: 3px; }
+
+.session-sub { font-family: var(–mono); font-size: 12px; color: var(–muted); }
+
+.session-toggle { color: var(–muted); font-size: 18px; transition: transform 0.2s; }
+
+.session-toggle.open { transform: rotate(180deg); }
+
+.session-body { display: none; }
+
+.session-body.open { display: block; }
+
+.session-ex-row { padding: 10px 14px; border-bottom: 1px solid var(–border); }
+
+.session-ex-row:last-child { border-bottom: none; }
+
+.session-ex-name { font-weight: 600; font-size: 12px; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+
+.pb-star { color: #ff8c00; font-size: 13px; }
+
+.session-ex-stats { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.stat-pill { background: var(–bg); border-radius: 5px; padding: 3px 7px; font-size: 11px; font-family: var(–mono); color: var(–muted); }
+
+.session-ex-notes { font-size: 11px; color: var(–muted); margin-top: 5px; font-style: italic; }
+
+.delete-session { margin: 8px 14px 12px; padding: 8px; width: calc(100% - 28px); background: none; border: 1px solid #e0d0d0; border-radius: 8px; color: var(–red); font-size: 12px; font-family: var(–sans); cursor: pointer; }
+
+
+
+.empty-state { text-align: center; padding: 50px 20px; color: var(–muted); }
+
+.empty-state span { display: block; font-size: 36px; margin-bottom: 10px; }
+
+.empty-state p { font-size: 14px; line-height: 1.6; }
+
+.no-data { text-align: center; padding: 30px 20px; color: var(–muted); font-size: 14px; }
+
+.no-data span { display: block; font-size: 28px; margin-bottom: 8px; }
+
+
+
+.filter-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+
+.filter-bar select { padding: 9px 10px; border: 1.5px solid var(–border); border-radius: 8px; font-family: var(–sans); font-size: 13px; background: var(–surface); color: var(–text); outline: none; appearance: none; background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘10’ height=‘6’ viewBox=‘0 0 10 6’%3E%3Cpath d=‘M1 1l4 4 4-4’ stroke=’%238a8780’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”); background-repeat: no-repeat; background-position: right 10px center; }
+
+
+
+.backup-section { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+
+.backup-header { padding: 12px 14px; background: var(–bg); border-bottom: 1px solid var(–border); font-size: 11px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.backup-body { padding: 14px; }
+
+.backup-body p { font-size: 13px; color: var(–muted); margin-bottom: 12px; line-height: 1.5; }
+
+.backup-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.btn-export { padding: 12px; border-radius: 10px; border: none; background: var(–accent); color: #fff; font-family: var(–sans); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+.btn-import { padding: 12px; border-radius: 10px; border: 1.5px solid var(–border); background: var(–surface); color: var(–text); font-family: var(–sans); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+.backup-info { margin-top: 10px; padding: 10px 12px; background: var(–bg); border-radius: 8px; font-size: 12px; color: var(–muted); font-family: var(–mono); }
+
+
+
+/* ===================== SUPPLEMENTS TAB STYLES ===================== */
+
+.supp-intro {
+
+background: linear-gradient(135deg, #1a1917, #2d5a3d);
+
+border-radius: 12px; padding: 16px; margin-bottom: 16px; color: #fff;
+
+}
+
+.supp-intro h2 { font-family: var(–mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+
+.supp-intro p { font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+
+
+
+.supp-filter-row { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+
+.supp-filter-row::-webkit-scrollbar { display: none; }
+
+.supp-filter-btn {
+
+flex-shrink: 0; padding: 7px 14px; border-radius: 100px;
+
+border: 1.5px solid var(–border); background: var(–surface);
+
+font-family: var(–sans); font-size: 11px; font-weight: 600;
+
+color: var(–muted); cursor: pointer; transition: all 0.2s;
+
+white-space: nowrap;
+
+}
+
+.supp-filter-btn.active { background: var(–accent); color: #fff; border-color: var(–accent); }
+
+
+
+.supp-time-block { margin-bottom: 20px; }
+
+.supp-time-header {
+
+display: flex; align-items: center; gap: 10px;
+
+margin-bottom: 10px; padding: 10px 14px;
+
+background: var(–text); border-radius: 10px; color: #fff;
+
+}
+
+.supp-time-icon { font-size: 20px; flex-shrink: 0; }
+
+.supp-time-label { flex: 1; }
+
+.supp-time-label .time-title { font-family: var(–mono); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.supp-time-label .time-subtitle { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+
+.supp-time-label .time-clock { font-family: var(–mono); font-size: 16px; font-weight: 500; color: #4ade80; }
+
+
+
+.supp-card {
+
+background: var(–surface); border: 1.5px solid var(–border);
+
+border-radius: 12px; margin-bottom: 10px; overflow: hidden;
+
+}
+
+.supp-card-header {
+
+padding: 12px 14px; background: var(–bg);
+
+border-bottom: 1px solid var(–border);
+
+display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+
+}
+
+.supp-card-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+
+.supp-card-name { font-size: 13px; font-weight: 700; color: var(–text); line-height: 1.3; }
+
+.supp-card-brand { font-size: 11px; color: var(–muted); margin-top: 2px; font-family: var(–mono); }
+
+.supp-card-toggle { margin-left: auto; color: var(–muted); font-size: 16px; transition: transform 0.2s; flex-shrink: 0; }
+
+.supp-card-toggle.open { transform: rotate(180deg); }
+
+.supp-card-body { display: none; }
+
+.supp-card-body.open { display: block; }
+
+
+
+.supp-row {
+
+padding: 10px 14px; border-bottom: 1px solid var(–border);
+
+display: flex; align-items: flex-start; gap: 10px;
+
+}
+
+.supp-row:last-child { border-bottom: none; }
+
+.supp-row-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+.supp-row-content { flex: 1; }
+
+.supp-row-label {
+
+font-size: 10px; font-weight: 700; text-transform: uppercase;
+
+letter-spacing: 0.07em; margin-bottom: 4px;
+
+}
+
+.supp-row-label.green { color: #16a34a; }
+
+.supp-row-label.red   { color: #dc2626; }
+
+.supp-row-label.blue  { color: #2563eb; }
+
+.supp-row-label.amber { color: #d97706; }
+
+
+
+.supp-row-text { font-size: 12px; line-height: 1.6; color: var(–text); }
+
+.supp-row-text strong { font-weight: 700; }
+
+.supp-row-text ul { padding-left: 14px; margin-top: 4px; }
+
+.supp-row-text ul li { margin-bottom: 2px; }
+
+
+
+.detox-card {
+
+background: linear-gradient(135deg, #fff8f0, #fff0e0);
+
+border: 1.5px solid #f0b060; border-radius: 12px;
+
+margin-bottom: 14px; overflow: hidden;
+
+}
+
+.detox-header {
+
+padding: 12px 14px; background: linear-gradient(90deg, #c87520, #ff8c00);
+
+display: flex; align-items: center; gap: 10px;
+
+}
+
+.detox-header-text .detox-title { font-size: 13px; font-weight: 700; color: #fff; }
+
+.detox-header-text .detox-sub { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+
+.detox-body { padding: 14px; }
+
+.detox-week {
+
+background: #fff; border: 1px solid #f0c080; border-radius: 8px;
+
+margin-bottom: 10px; overflow: hidden;
+
+}
+
+.detox-week-header {
+
+padding: 9px 12px; background: #fff8f0;
+
+border-bottom: 1px solid #f0e0c0;
+
+font-size: 11px; font-weight: 700; color: #c87520;
+
+text-transform: uppercase; letter-spacing: 0.06em;
+
+display: flex; justify-content: space-between; align-items: center;
+
+}
+
+.detox-dose-badge {
+
+background: #ff8c00; color: #fff; font-size: 10px;
+
+font-weight: 700; padding: 2px 8px; border-radius: 100px; font-family: var(–mono);
+
+}
+
+.detox-week-body { padding: 10px 12px; font-size: 12px; line-height: 1.7; color: var(–text); }
+
+.detox-week-body .step { display: flex; gap: 8px; margin-bottom: 4px; }
+
+.detox-week-body .step-num { font-family: var(–mono); font-weight: 700; color: #ff8c00; flex-shrink: 0; }
+
+.detox-post-note {
+
+margin-top: 10px; padding: 12px;
+
+background: #fff0f0; border: 1.5px solid #f0c0a0; border-radius: 8px;
+
+font-size: 12px; line-height: 1.6; color: #c0392b;
+
+}
+
+.detox-post-note strong { font-weight: 700; }
+
+
+
+.gym-day-note {
+
+background: var(–accent-light); border: 1px solid #c8dece;
+
+border-radius: 8px; padding: 9px 12px; margin-bottom: 12px;
+
+font-size: 12px; color: var(–accent); display: flex; align-items: center; gap: 8px;
+
+}
+
+
+
+/* ===================== REVIEW TAB STYLES ===================== */
+
+.review-intro {
+
+background: linear-gradient(135deg, #1a1917, #2471a3);
+
+border-radius: 12px; padding: 16px; margin-bottom: 16px; color: #fff;
+
+}
+
+.review-intro h2 { font-family: var(–mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+
+.review-intro p { font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+
+
+
+.review-month-sel { margin-bottom: 16px; }
+
+.review-month-sel label { display: block; font-size: 11px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+
+.review-month-sel select { width: 100%; padding: 11px 14px; border: 1.5px solid var(–border); border-radius: 10px; font-family: var(–sans); font-size: 14px; font-weight: 500; background: var(–surface); color: var(–text); outline: none; appearance: none; background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘10’ height=‘6’ viewBox=‘0 0 10 6’%3E%3Cpath d=‘M1 1l4 4 4-4’ stroke=’%238a8780’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”); background-repeat: no-repeat; background-position: right 14px center; }
+
+
+
+.weakness-board { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+
+.weakness-board-header { padding: 12px 14px; background: var(–bg); border-bottom: 1px solid var(–border); display: flex; justify-content: space-between; align-items: center; }
+
+.weakness-board-header h3 { font-size: 11px; font-weight: 700; color: var(–text); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.weakness-board-header span { font-size: 10px; color: var(–muted); }
+
+.weakness-legend { display: flex; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(–border); background: #fafaf8; flex-wrap: wrap; }
+
+.legend-pill { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(–muted); font-weight: 600; }
+
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.legend-dot.red { background: #c0392b; }
+
+.legend-dot.amber { background: #d68910; }
+
+.legend-dot.green { background: #2d5a3d; }
+
+
+
+.weakness-row { padding: 10px 14px; border-bottom: 1px solid var(–border); display: flex; align-items: center; gap: 10px; }
+
+.weakness-row:last-child { border-bottom: none; }
+
+.weakness-rank { font-family: var(–mono); font-size: 11px; color: var(–muted); min-width: 22px; font-weight: 600; }
+
+.weakness-bar-wrap { flex: 1; }
+
+.weakness-ex-name { font-size: 12px; font-weight: 600; color: var(–text); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+
+.weakness-ex-day { font-size: 10px; color: var(–muted); font-weight: 400; font-family: var(–mono); }
+
+.weakness-bar-bg { height: 6px; background: var(–bg); border-radius: 3px; overflow: hidden; }
+
+.weakness-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+.weakness-bar-fill.critical { background: #c0392b; }
+
+.weakness-bar-fill.warning { background: #d68910; }
+
+.weakness-bar-fill.good { background: #2d5a3d; }
+
+.weakness-signals { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+
+.signal-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.signal-tag.stall { background: #fdecea; color: #c0392b; }
+
+.signal-tag.maxrpe { background: #fef9ec; color: #d68910; }
+
+.signal-tag.skipped { background: #f0f0ee; color: #8a8780; }
+
+.signal-tag.improving { background: #e8f0eb; color: #2d5a3d; }
+
+.weakness-score { font-family: var(–mono); font-size: 13px; font-weight: 700; min-width: 32px; text-align: right; }
+
+.weakness-score.critical { color: #c0392b; }
+
+.weakness-score.warning { color: #d68910; }
+
+.weakness-score.good { color: #2d5a3d; }
+
+
+
+.review-section-title { font-size: 11px; font-weight: 700; color: var(–muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 20px 0 10px 2px; }
+
+.month-overview { background: var(–surface); border: 1.5px solid var(–border); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+
+.month-overview-header { padding: 11px 14px; background: var(–bg); border-bottom: 1px solid var(–border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+
+.month-week-label { font-size: 12px; font-weight: 700; color: var(–text); }
+
+.month-week-meta { font-family: var(–mono); font-size: 11px; color: var(–muted); }
+
+.month-week-toggle { color: var(–muted); font-size: 16px; transition: transform 0.2s; }
+
+.month-week-toggle.open { transform: rotate(180deg); }
+
+.month-week-body { display: none; }
+
+.month-week-body.open { display: block; }
+
+
+
+.month-day-block { border-bottom: 1px solid var(–border); }
+
+.month-day-block:last-child { border-bottom: none; }
+
+.month-day-header { padding: 9px 14px; background: #fafaf8; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+.month-day-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.month-day-dot.trained { background: var(–accent); }
+
+.month-day-dot.missed { background: #e0ddd8; }
+
+.month-day-name { font-size: 12px; font-weight: 700; color: var(–text); flex: 1; }
+
+.month-day-label { font-size: 10px; color: var(–muted); font-family: var(–mono); }
+
+.month-day-chevron { color: var(–muted); font-size: 13px; transition: transform 0.2s; }
+
+.month-day-chevron.open { transform: rotate(180deg); }
+
+.month-day-exercises { display: none; }
+
+.month-day-exercises.open { display: block; }
+
+
+
+.month-ex-row { padding: 9px 14px 9px 30px; border-top: 1px solid var(–border); display: flex; align-items: flex-start; gap: 8px; }
+
+.month-ex-name { font-size: 12px; font-weight: 600; color: var(–text); flex: 1; }
+
+.month-ex-stats { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+
+.month-ex-stat { background: var(–bg); border-radius: 4px; padding: 2px 7px; font-size: 11px; font-family: var(–mono); color: var(–muted); }
+
+.month-ex-trend { font-size: 14px; margin-top: 2px; flex-shrink: 0; }
+
+.month-ex-flag { font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 3px; margin-top: 4px; align-self: flex-start; flex-shrink: 0; }
+
+.month-ex-flag.weak { background: #fdecea; color: #c0392b; }
+
+.month-ex-flag.watch { background: #fef9ec; color: #d68910; }
+
+.month-ex-flag.strong { background: #e8f0eb; color: #2d5a3d; }
+
+
+
+.no-review-data { text-align: center; padding: 40px 20px; color: var(–muted); }
+
+.no-review-data span { display: block; font-size: 32px; margin-bottom: 10px; }
+
+.no-review-data p { font-size: 13px; line-height: 1.6; }
+
+
+
+.review-stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+
+.review-stat-card { background: var(–surface); border: 1.5px solid var(–border); border-radius: 10px; padding: 12px 10px; text-align: center; }
+
+.review-stat-val { font-family: var(–mono); font-size: 22px; font-weight: 700; color: var(–text); }
+
+.review-stat-label { font-size: 9px; font-weight: 600; color: var(–muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; }
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+
+<header>
+
+  <h1>ActiveStrongHealthy 2026</h1>
+
+  <span id="sessionCount">0 sessions</span>
+
+</header>
+
+
+
+<div class="tabs">
+
+  <div class="tab active" onclick="switchTab('log')">Log</div>
+
+  <div class="tab" onclick="switchTab('progress')">Progress</div>
+
+  <div class="tab" onclick="switchTab('body')">Body</div>
+
+  <div class="tab" onclick="switchTab('history')">History</div>
+
+  <div class="tab" onclick="switchTab('supplements')">Supps</div>
+
+  <div class="tab" onclick="switchTab('review')">Review</div>
+
+  <div class="tab" onclick="switchTab('backup')">Backup</div>
+
+</div>
+
+
+
+<!-- ===== LOG TAB ===== -->
+
+
+
+<div id="view-log" class="view active">
+
+  <div class="selector-row three">
+
+    <div class="sel-group"><label>Month</label><select id="logMonth" onchange="onLogMonthChange()"></select></div>
+
+    <div class="sel-group"><label>Week</label><select id="logWeek" onchange="onLogWeekChange()"></select></div>
+
+    <div class="sel-group"><label>Day</label><select id="logDaySelect" onchange="onLogDayChange()"></select></div>
+
+  </div>
+
+  <div class="week-badge" id="weekBadge">—</div>
+
+  <div id="exerciseCards"></div>
+
+  <button class="save-btn" onclick="saveSession()">Save Session</button>
+
+</div>
+
+
+
+<!-- ===== PROGRESS TAB ===== -->
+
+
+
+<div id="view-progress" class="view">
+
+  <div class="exercise-picker">
+
+    <label>Exercise</label>
+
+    <select id="exerciseSelect" onchange="renderProgress()"></select>
+
+  </div>
+
+  <div class="chart-card"><h3>Weight (kg)</h3><div class="chart-wrap"><canvas id="weightChart"></canvas></div></div>
+
+  <div class="chart-card"><h3>Reps</h3><div class="chart-wrap"><canvas id="repsChart"></canvas></div></div>
+
+  <div class="chart-card"><h3>RPE (Effort 1–10)</h3><div class="chart-wrap"><canvas id="rpeChart"></canvas></div></div>
+
+  <div class="progress-table" id="progressTable"></div>
+
+</div>
+
+
+
+<!-- ===== BODY TAB ===== -->
+
+
+
+<div id="view-body" class="view">
+
+  <div class="body-section">
+
+    <div class="body-section-header">
+
+      Weekly Body Metrics
+
+      <span>Log every Wednesday</span>
+
+    </div>
+
+    <div class="body-date-row">
+
+      <label>Date</label>
+
+      <input type="date" id="bodyDate">
+
+    </div>
+
+    <div class="body-grid">
+
+      <div class="body-field"><label>Body Weight</label><input type="number" inputmode="decimal" step="0.1" placeholder="0.0" id="bw_weight"><div class="body-unit">kg</div></div>
+
+      <div class="body-field"><label>BMI</label><input type="number" inputmode="decimal" step="0.1" placeholder="0.0" id="bw_bmi"><div class="body-unit">kg/m²</div></div>
+
+      <div class="body-field"><label>Body Fat</label><input type="number" inputmode="decimal" step="0.1" placeholder="0.0" id="bw_fat"><div class="body-unit">%</div></div>
+
+      <div class="body-field"><label>Body Water</label><input type="number" inputmode="decimal" step="0.1" placeholder="0.0" id="bw_water"><div class="body-unit">%</div></div>
+
+      <div class="body-field"><label>Muscle</label><input type="number" inputmode="decimal" step="0.1" placeholder="0.0" id="bw_muscle"><div class="body-unit">%</div></div>
+
+      <div class="body-field"><label>Bone Mass</label><input type="number" inputmode="decimal" step="0.1" placeholder="0.0" id="bw_bone"><div class="body-unit">%</div></div>
+
+      <div class="body-field"><label>BMR</label><input type="number" inputmode="decimal" step="1" placeholder="0" id="bw_bmr"><div class="body-unit">kcal/day</div></div>
+
+      <div class="body-field"><label>AMR</label><input type="number" inputmode="decimal" step="1" placeholder="0" id="bw_amr"><div class="body-unit">kcal/day</div></div>
+
+      <div class="body-field"><label>Metabolic Age</label><input type="number" inputmode="decimal" step="1" placeholder="0" id="bw_meta"><div class="body-unit">years</div></div>
+
+    </div>
+
+  </div>
+
+  <button class="save-body-btn" onclick="saveBodyMetrics()">Save Body Metrics</button>
+
+  <div class="chart-card" style="margin-top:16px"><h3>Body Weight (kg)</h3><div class="chart-wrap"><canvas id="bodyWeightChart"></canvas></div></div>
+
+  <div class="chart-card"><h3>Body Fat %</h3><div class="chart-wrap"><canvas id="bodyFatChart"></canvas></div></div>
+
+  <div class="chart-card"><h3>Muscle %</h3><div class="chart-wrap"><canvas id="bodyMuscleChart"></canvas></div></div>
+
+  <div class="body-history">
+
+    <div class="body-history-header">History</div>
+
+    <div id="bodyHistoryList"></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- ===== HISTORY TAB ===== -->
+
+
+
+<div id="view-history" class="view">
+
+  <div class="filter-bar">
+
+    <select id="histFilterMonth" onchange="renderHistory()"><option value="">All Months</option></select>
+
+    <select id="histFilterDay" onchange="renderHistory()">
+
+      <option value="">All Days</option>
+
+      <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+
+      <option>Thursday</option><option>Friday</option>
+
+    </select>
+
+  </div>
+
+  <div id="sessionList"></div>
+
+</div>
+
+
+
+<!-- ===== SUPPLEMENTS TAB ===== -->
+
+
+
+<div id="view-supplements" class="view">
+
+
+
+  <div class="supp-intro">
+
+    <h2>🧬 Daily Supplement Protocol</h2>
+
+    <p>Science-backed timing, dosing &amp; food pairings for your full supplement stack. Tap any supplement to expand details. Filter by gym vs rest day.</p>
+
+  </div>
+
+
+
+  <div class="supp-filter-row">
+
+    <button class="supp-filter-btn active" onclick="filterSupps('all', this)">All Days</button>
+
+    <button class="supp-filter-btn" onclick="filterSupps('gym', this)">🏋️ Gym Day</button>
+
+    <button class="supp-filter-btn" onclick="filterSupps('rest', this)">😴 Rest Day</button>
+
+    <button class="supp-filter-btn" onclick="filterSupps('detox', this)">🔥 Detox Protocol</button>
+
+  </div>
+
+
+
+  <!-- MORNING BLOCK -->
+
+
+
+  <div class="supp-time-block" data-timing="all">
+
+    <div class="supp-time-header">
+
+      <div class="supp-time-icon">
+
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+
+          <circle cx="14" cy="14" r="12" stroke="#4ade80" stroke-width="2" fill="none"/>
+
+          <line x1="14" y1="7" x2="14" y2="14" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"/>
+
+          <line x1="14" y1="14" x2="19" y2="17" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"/>
+
+          <circle cx="14" cy="14" r="1.5" fill="#4ade80"/>
+
+        </svg>
+
+      </div>
+
+      <div class="supp-time-label">
+
+        <div class="time-clock">07:00 – 08:00</div>
+
+        <div class="time-title">Morning — With Breakfast</div>
+
+        <div class="time-subtitle">Take with your first meal of the day</div>
+
+      </div>
+
+    </div>
+
+
+
+```
+
+<!-- OMEGA-3 -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_omega3')">
+
+    <div class="supp-card-icon">🐟</div>
+
+    <div style="flex:1">
+
+      <div class="supp-card-name">Omega-3 Fish Oil 1300mg</div>
+
+      <div class="supp-card-brand">Nature's Best Maximum Strength EPA/DHA</div>
+
+    </div>
+
+    <div class="supp-card-toggle" id="tog_s_omega3">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_omega3">
+
+    <div class="supp-row">
+
+      <div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div>
+
+      <div class="supp-row-content">
+
+        <div class="supp-row-label green">🟢 Timing</div>
+
+        <div class="supp-row-text">Take <strong>1 capsule with breakfast</strong> and <strong>1 capsule with your evening meal</strong> (split dosing improves absorption and reduces fishy aftertaste). <strong>On gym days:</strong> morning dose only — second dose post-workout evening meal.</div>
+
+      </div>
+
+    </div>
+
+    <div class="supp-row">
+
+      <div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div class="supp-row-content">
+
+        <div class="supp-row-label red">🔴 Dose</div>
+
+        <div class="supp-row-text"><strong>2 × 1300mg capsules per day</strong> (split AM/PM). Provides ~780mg EPA + 520mg DHA total. Research supports 1–3g EPA+DHA daily for cardiovascular, anti-inflammatory and muscle recovery benefits.</div>
+
+      </div>
+
+    </div>
+
+    <div class="supp-row">
+
+      <div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="4" y1="5" x2="4" y2="17" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="5" x2="8" y2="9" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="11" x2="7" y2="11" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/><path d="M11 8 Q14 5 16 8 Q18 11 16 14 Q14 17 11 14 Z" stroke="#2563eb" stroke-width="1.8" fill="none"/></svg></div>
+
+      <div class="supp-row-content">
+
+        <div class="supp-row-label blue">🔵 Take With Food</div>
+
+        <div class="supp-row-text">Always take with a <strong>fat-containing meal</strong> (eggs, avocado, nuts, olive oil). Fat in the meal triggers bile release which dramatically boosts EPA/DHA absorption by up to 50%.</div>
+
+      </div>
+
+    </div>
+
+    <div class="supp-row">
+
+      <div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div>
+
+      <div class="supp-row-content">
+
+        <div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div>
+
+        <div class="supp-row-text"><ul><li>High-dose fish oil (3g+) may mildly increase bleeding time — inform your doctor if on blood thinners.</li><li>Do <strong>not</strong> take at the same time as Vitamin E supplements (separate by 2+ hours).</li><li>Avoid taking alongside iron supplements — Omega-3 may impair iron absorption.</li><li>Freeze or refrigerate capsules to prevent oxidation and rancidity.</li></ul></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- D3/K2 -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_d3k2')">
+
+    <div class="supp-card-icon">☀️</div>
+
+    <div style="flex:1">
+
+      <div class="supp-card-name">Vitamin D3 4000 IU + K2 100mcg</div>
+
+      <div class="supp-card-brand">Oxford Origins D3/K2 MK-7 — 240 Capsules</div>
+
+    </div>
+
+    <div class="supp-card-toggle" id="tog_s_d3k2">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_d3k2">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text">Take <strong>1 capsule every morning with breakfast</strong>. D3 is fat-soluble — morning dosing aligns with natural cortisol rhythm and does not disrupt evening melatonin production. Take daily, 7 days a week.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>4000 IU Vitamin D3 + 100mcg K2 (MK-7) daily</strong>. K2 (MK-7 form) is critical to direct calcium to bones and away from arteries when supplementing D3 at this dose.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="4" y1="5" x2="4" y2="17" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="5" x2="8" y2="9" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="11" x2="7" y2="11" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/><path d="M11 8 Q14 5 16 8 Q18 11 16 14 Q14 17 11 14 Z" stroke="#2563eb" stroke-width="1.8" fill="none"/></svg></div><div class="supp-row-content"><div class="supp-row-label blue">🔵 Take With Food</div><div class="supp-row-text">Take with a <strong>fatty breakfast</strong> — eggs, salmon, full-fat yoghurt, avocado on toast, or whole milk. Fat increases D3 absorption by 32–57%.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div><div class="supp-row-content"><div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div><div class="supp-row-text"><ul><li><strong>Do NOT take D3 at the same time as Magnesium</strong> — separate by at least 4 hours.</li><li>K2 (MK-7) interacts with warfarin/anticoagulants — consult your doctor.</li><li>Get serum 25-OH vitamin D tested every 6 months to stay in 100–150 nmol/L range.</li></ul></div></div></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- B COMPLEX -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_bcomplex')">
+
+    <div class="supp-card-icon">⚡</div>
+
+    <div style="flex:1">
+
+      <div class="supp-card-name">Super B Vitamin Complex</div>
+
+      <div class="supp-card-brand">VitaBright — Full Spectrum B1 B2 B3 B5 B6 B7 B9 B12</div>
+
+    </div>
+
+    <div class="supp-card-toggle" id="tog_s_bcomplex">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_bcomplex">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text">Take <strong>1 capsule with breakfast, every morning</strong>. B vitamins are water-soluble and energising — morning dosing avoids sleep disruption. Do not take in the evening.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>1 capsule daily</strong> as directed on the VitaBright label. Key B vitamins for training: B3 supports NAD+ and energy; B6 supports amino acid metabolism; B12 supports nerve function and red blood cell production.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="4" y1="5" x2="4" y2="17" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="5" x2="8" y2="9" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="11" x2="7" y2="11" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/><path d="M11 8 Q14 5 16 8 Q18 11 16 14 Q14 17 11 14 Z" stroke="#2563eb" stroke-width="1.8" fill="none"/></svg></div><div class="supp-row-content"><div class="supp-row-label blue">🔵 Take With Food</div><div class="supp-row-text">Take with a <strong>full breakfast</strong> — oats, eggs, whole grain bread, or yoghurt. Food reduces nausea that high-dose B3 can cause and improves absorption of B12 and folate.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div><div class="supp-row-content"><div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div><div class="supp-row-text"><ul><li>High-dose B3 may cause a harmless "flush" — red skin, warmth, tingling. Resolves in 20–30 min.</li><li>B vitamins compete with Magnesium and Zinc for absorption — space 2+ hours apart from minerals.</li><li>Your urine may turn bright yellow — this is riboflavin (B2) and is completely harmless.</li></ul></div></div></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- ASTAXANTHIN -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_astax')">
+
+    <div class="supp-card-icon">🦐</div>
+
+    <div style="flex:1">
+
+      <div class="supp-card-name">Astaxanthin 12mg</div>
+
+      <div class="supp-card-brand">Nu U Nutrition — 180 Softgels</div>
+
+    </div>
+
+    <div class="supp-card-toggle" id="tog_s_astax">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_astax">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text">Take <strong>1 softgel with breakfast daily</strong>. Astaxanthin is fat-soluble and best absorbed with the morning fatty meal. Consistent daily dosing builds tissue saturation over 2–4 weeks.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>12mg daily</strong>. Research shows 12mg is optimal for exercise-induced oxidative stress, muscle recovery, skin health and anti-inflammatory effects.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="4" y1="5" x2="4" y2="17" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="5" x2="8" y2="9" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="11" x2="7" y2="11" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/><path d="M11 8 Q14 5 16 8 Q18 11 16 14 Q14 17 11 14 Z" stroke="#2563eb" stroke-width="1.8" fill="none"/></svg></div><div class="supp-row-content"><div class="supp-row-label blue">🔵 Take With Food</div><div class="supp-row-text">Pairs excellently with <strong>Omega-3 at breakfast</strong> — both are fat-soluble and dietary fat boosts astaxanthin bioavailability significantly.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div><div class="supp-row-content"><div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div><div class="supp-row-text"><ul><li>May lower blood pressure slightly — monitor if already on antihypertensives.</li><li>Very safe at 12mg — no established toxicity in human trials up to 40mg/day.</li><li>Synergises well with Omega-3 and Vitamin E — powerfully anti-inflammatory combination.</li></ul></div></div></div>
+
+  </div>
+
+</div>
+
+```
+
+
+
+  </div><!-- end morning block -->
+
+
+
+  <!-- PRE-WORKOUT BLOCK -->
+
+
+
+  <div class="supp-time-block" data-timing="gym">
+
+    <div class="supp-time-header" style="background: linear-gradient(90deg, #1e3a5f, #2471a3);">
+
+      <div class="supp-time-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="#60a5fa" stroke-width="2" fill="none"/><line x1="14" y1="7" x2="14" y2="14" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round"/><line x1="14" y1="14" x2="19" y2="17" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round"/><circle cx="14" cy="14" r="1.5" fill="#60a5fa"/></svg></div>
+
+      <div class="supp-time-label">
+
+        <div class="time-clock" style="color:#60a5fa;">30–45 Min Before Training</div>
+
+        <div class="time-title">Pre-Workout Stack</div>
+
+        <div class="time-subtitle" style="color:rgba(255,255,255,0.7);">🏋️ Gym Days Only — Mon / Tue / Wed / Thu / Fri</div>
+
+      </div>
+
+    </div>
+
+
+
+```
+
+<div class="gym-day-note">🏋️ These supplements are for <strong>gym training days only</strong>. Do not take pre-workout supplements on rest days.</div>
+
+
+
+<!-- CAFFEINE -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_caffeine')">
+
+    <div class="supp-card-icon">☕</div>
+
+    <div style="flex:1"><div class="supp-card-name">Caffeine 200mg (Pure)</div><div class="supp-card-brand">Peak Supps — 360 Capsules | Pre-Cardio Only</div></div>
+
+    <div class="supp-card-toggle" id="tog_s_caffeine">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_caffeine">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text"><strong>Take 30–45 minutes before cardio</strong> on training days only. Caffeine reaches peak plasma concentration at 30–60 min and significantly enhances aerobic performance, endurance output and fat oxidation during cardio.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>200mg (1 capsule) — for cardio sessions</strong>. Do not exceed 400mg total daily caffeine (including coffee/tea).</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div><div class="supp-row-content"><div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div><div class="supp-row-text"><ul><li>Half-life of caffeine is 5–6 hours — avoid after 2pm if training in the morning or sleep will suffer.</li><li>Caffeine is a diuretic — increase water intake during cardio by 250–500ml.</li><li>Cycle caffeine: 5 days on, 2 days off (rest days) to prevent tolerance.</li><li><strong>Do NOT combine with Nicotinamide on detox days</strong> — combined vasodilation may cause headaches.</li></ul></div></div></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- CITRULLINE MALATE -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_cit')">
+
+    <div class="supp-card-icon">💪</div>
+
+    <div style="flex:1"><div class="supp-card-name">Citrulline Malate 2:1 Powder</div><div class="supp-card-brand">Peak Supps — 250g | Pre-Workout Pump &amp; Endurance</div></div>
+
+    <div class="supp-card-toggle" id="tog_s_cit">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_cit">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text">Take <strong>45–60 minutes before training</strong> on all gym days. Earlier timing is essential for full nitric oxide pump effect during lifting.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>6–8g Citrulline Malate (2:1) per session</strong>. Scoop and mix in 300–400ml water.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div><div class="supp-row-content"><div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div><div class="supp-row-text"><ul><li>May cause a mild headache at first use — start with 4g and increase over 1–2 weeks.</li><li>Do not combine with PDE5 inhibitors — combined vasodilation may cause dangerous blood pressure drop.</li><li>Avoid taking with high-dose arginine supplements — redundant and can cause GI upset.</li></ul></div></div></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- BETA-ALANINE -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_ba')">
+
+    <div class="supp-card-icon">🔥</div>
+
+    <div style="flex:1"><div class="supp-card-name">Beta-Alanine CarnoSyn® Powder</div><div class="supp-card-brand">HSN Raw Series CarnoSyn® — 150g</div></div>
+
+    <div class="supp-card-toggle" id="tog_s_ba">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_ba">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text">Take <strong>30–45 minutes before training</strong> on gym days. On rest days: take with any meal. Consistent daily dosing matters most.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>3.2–6.4g per day (split into 2 × 1.6–3.2g doses)</strong> to minimise paraesthesia. CarnoSyn® is the patented, research-validated form.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div><div class="supp-row-content"><div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div><div class="supp-row-text"><ul><li><strong>Paraesthesia (tingling/flushing)</strong> is the most common side effect — harmless. Reduce dose if intolerable.</li><li>Beta-alanine competes with taurine for cellular uptake — separate by 2+ hours if using taurine.</li><li>Do not take within 2 hours of the Sauna Detox Nicotinamide dose — combined flushing can be very uncomfortable.</li></ul></div></div></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- CREATINE -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_creatine')">
+
+    <div class="supp-card-icon">🧪</div>
+
+    <div style="flex:1"><div class="supp-card-name">Creatine Monohydrate Creapure®</div><div class="supp-card-brand">Bulk.com — The Gold Standard Creatine</div></div>
+
+    <div class="supp-card-toggle" id="tog_s_creatine">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_creatine">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text"><strong>Post-workout is marginally superior</strong> — take within 30 min of finishing training with your protein shake and carbs. On <strong>rest days</strong>: take with any meal. Take <strong>7 days per week</strong>.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>5g daily (maintenance dose)</strong>. No loading phase required — steady 5g/day reaches full muscle saturation in 28 days. Creapure® is 99.99% pure creatine monohydrate.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div><div class="supp-row-content"><div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div><div class="supp-row-text"><ul><li>Drink an additional 500ml water per day — creatine draws water into muscle cells.</li><li>Safe for kidneys in healthy individuals. Avoid if you have pre-existing kidney disease.</li><li>May cause 1–2kg initial weight gain from water retention in muscle — this is normal and desired.</li><li><strong>On Sauna Detox days:</strong> take creatine AFTER the detox window (2+ hours post-sauna) with electrolytes and Vitamin C.</li></ul></div></div></div>
+
+  </div>
+
+</div>
+
+```
+
+
+
+  </div><!-- end pre-workout block -->
+
+
+
+  <!-- POST-WORKOUT BLOCK -->
+
+
+
+  <div class="supp-time-block" data-timing="gym">
+
+    <div class="supp-time-header" style="background: linear-gradient(90deg, #1a4731, #2d5a3d);">
+
+      <div class="supp-time-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="#4ade80" stroke-width="2" fill="none"/><line x1="14" y1="7" x2="14" y2="14" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"/><line x1="14" y1="14" x2="19" y2="17" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"/><circle cx="14" cy="14" r="1.5" fill="#4ade80"/></svg></div>
+
+      <div class="supp-time-label">
+
+        <div class="time-clock">Within 30–45 Min Post-Training</div>
+
+        <div class="time-title">Post-Workout Recovery Window</div>
+
+        <div class="time-subtitle" style="color:rgba(255,255,255,0.7);">🏋️ Gym Days — Anabolic Window</div>
+
+      </div>
+
+    </div>
+
+
+
+```
+
+<!-- WHEY ISOLATE -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_whey')">
+
+    <div class="supp-card-icon">🥛</div>
+
+    <div style="flex:1"><div class="supp-card-name">Pure Whey Isolate 90™</div><div class="supp-card-brand">Bulk.com — 1kg | 90%+ Protein, Low Lactose</div></div>
+
+    <div class="supp-card-toggle" id="tog_s_whey">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_whey">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text">Consume <strong>within 30–45 minutes post-training</strong> for optimal muscle protein synthesis. Whey isolate has the fastest gastric emptying rate of any protein.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>25–30g per serving (1–1.5 scoops)</strong> in 200–300ml water or milk. Aim for <strong>1.6–2.2g protein per kg bodyweight per day</strong> from all sources.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 19,18 1,18" stroke="#d97706" stroke-width="1.8" fill="none" stroke-linejoin="round"/><line x1="10" y1="8" x2="10" y2="13" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1" fill="#d97706"/></svg></div><div class="supp-row-content"><div class="supp-row-label amber">⚠️ Warning &amp; Interactions</div><div class="supp-row-text"><ul><li>Do not take at the same time as Magnesium or Zinc supplements — minerals can compete with amino acid absorption.</li><li>Do not use as a meal replacement for all meals — whole food protein provides micronutrients whey does not.</li><li>Do not exceed 2.5g protein/kg/day long-term without medical supervision.</li></ul></div></div></div>
+
+  </div>
+
+</div>
+
+```
+
+
+
+  </div><!-- end post-workout block -->
+
+
+
+  <!-- EVENING BLOCK -->
+
+
+
+  <div class="supp-time-block" data-timing="all">
+
+    <div class="supp-time-header" style="background: linear-gradient(90deg, #3b2a6b, #7b5ea7);">
+
+      <div class="supp-time-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="#c4b5fd" stroke-width="2" fill="none"/><line x1="14" y1="7" x2="14" y2="14" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round"/><line x1="14" y1="14" x2="17" y2="18" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round"/><circle cx="14" cy="14" r="1.5" fill="#c4b5fd"/></svg></div>
+
+      <div class="supp-time-label">
+
+        <div class="time-clock" style="color:#c4b5fd;">18:00 – 20:00</div>
+
+        <div class="time-title">Evening — With Dinner</div>
+
+        <div class="time-subtitle" style="color:rgba(255,255,255,0.7);">Second Omega-3 dose + Evening recovery supps</div>
+
+      </div>
+
+    </div>
+
+
+
+```
+
+<!-- OMEGA-3 EVENING -->
+
+<div class="supp-card">
+
+  <div class="supp-card-header" onclick="toggleSupp('s_omega3b')">
+
+    <div class="supp-card-icon">🐟</div>
+
+    <div style="flex:1"><div class="supp-card-name">Omega-3 Fish Oil — Evening Dose</div><div class="supp-card-brand">Nature's Best 1300mg — 2nd daily dose with dinner</div></div>
+
+    <div class="supp-card-toggle" id="tog_s_omega3b">▼</div>
+
+  </div>
+
+  <div class="supp-card-body" id="s_omega3b">
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.8" fill="none"/><line x1="10" y1="4" x2="10" y2="10" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="10" x2="14" y2="12.5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label green">🟢 Timing</div><div class="supp-row-text"><strong>1 capsule with evening dinner</strong>. Split dosing is supported by research to improve bioavailability and reduce GI side effects. Evening dose supports overnight anti-inflammatory and muscle repair processes.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="14" height="5" rx="2" stroke="#dc2626" stroke-width="1.8" fill="none"/><line x1="10" y1="3" x2="10" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><polyline points="7,7 10,3 13,7" stroke="#dc2626" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="supp-row-content"><div class="supp-row-label red">🔴 Dose</div><div class="supp-row-text"><strong>1 × 1300mg capsule</strong> with dinner. Total daily intake: 2 capsules = ~2600mg fish oil providing approximately 1.5–2g combined EPA+DHA.</div></div></div>
+
+    <div class="supp-row"><div class="supp-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="4" y1="5" x2="4" y2="17" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="5" x2="8" y2="9" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="11" x2="7" y2="11" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/><path d="M11 8 Q14 5 16 8 Q18 11 16 14 Q14 17 11 14 Z" stroke="#2563eb" stroke-width="1.8" fill="none"/></svg></div><div class="supp-row-content"><div class="supp-row-label blue">🔵 Take With Food</div><div class="supp-row-text">Take with a <strong>balanced dinner<
